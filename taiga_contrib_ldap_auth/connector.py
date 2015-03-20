@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from ldap3 import Server, Connection, AUTH_SIMPLE, STRATEGY_SYNC
+from ldap3 import Server, Connection, AUTH_SIMPLE, STRATEGY_SYNC, SUBTREE
 
 from django.conf import settings
 from taiga.base.connectors.exceptions import ConnectorBaseException
@@ -27,20 +27,34 @@ class LDAPLoginError(ConnectorBaseException):
 
 SERVER = getattr(settings, "LDAP_SERVER", "")
 DN_FORMAT = getattr(settings, "LDAP_DN_FORMAT", "")
+UID_FORMAT = getattr(settings, "LDAP_UID_FORMAT", "")
+AUTH_DN_FORMAT = UID_FORMAT+"={username},"+DN_FORMAT
 BASE_EMAIL = getattr(settings, "LDAP_BASE_EMAIL", "")
+MAIL_FORMAT = getattr(settings, "LDAP_MAIL_FORMAT", "")
+FULLNAME_FORMAT = getattr(settings, "LDAP_FULLNAME_FORMAT", "")
 
 
 def login(username: str, password: str) -> tuple:
-    dn = DN_FORMAT.format(username=username)
+    dn = AUTH_DN_FORMAT.format(username=username)
+    c = None
     try:
         server = Server(SERVER)
-        Connection(server, auto_bind=True, client_strategy=STRATEGY_SYNC,
+        c = Connection(server, auto_bind=True, client_strategy=STRATEGY_SYNC,
                    user=dn, password=password, authentication=AUTH_SIMPLE,
                    check_names=True)
     except:
         raise LDAPLoginError({"error_message": "LDAP account or password incorrect."})
 
-    # TODO: fetch email and fullname information from LDAP server
-    email = username + BASE_EMAIL
-    full_name = username
+    email = None
+    full_name = None
+    if c is not None:
+        c.search(DN_FORMAT,'('+UID_FORMAT+'='+username+')', SUBTREE, attributes = [MAIL_FORMAT,FULLNAME_FORMAT])
+        if c.entries is not None:
+            for entry in c.entries:
+                email = entry.mail[0]
+                full_name = entry.cn[0]
+    else:
+        #Fallback to defaults if we can't get username and email from ldap
+        email = username + BASE_EMAIL
+        full_name = username
     return (email, full_name)
