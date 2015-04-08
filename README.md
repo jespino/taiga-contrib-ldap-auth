@@ -21,7 +21,10 @@ LDAP configuration:
 ```python
   INSTALLED_APPS += ["taiga_contrib_ldap_auth"]
   LDAP_SERVER = "ldap://ldap.example.com"
-  LDAP_DN_FORMAT = "uid={username},cn=users,dc=example,dc=com"
+  LDAP_DN_FORMAT = "cn=users,dc=example,dc=com"
+  LDAP_UID_FORMAT = "uid"
+  LDAP_MAIL_FORMAT = "mail"
+  LDAP_FULLNAME_FORMAT = "cn"
   LDAP_BASE_EMAIL = "@example.com"
 ```
 
