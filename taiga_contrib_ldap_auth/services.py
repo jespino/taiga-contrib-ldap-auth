@@ -41,9 +41,8 @@ def ldap_register(username: str, email: str, full_name: str):
         user = user_model.objects.get(username=username)
     except user_model.DoesNotExist:
         # Create a new user
-        username_unique = slugify_uniquely(username, user_model, slugfield="username")
         user = user_model.objects.create(email=email,
-                                         username=username_unique,
+                                         username=username,
                                          full_name=full_name)
         user_registered_signal.send(sender=user.__class__, user=user)
 
