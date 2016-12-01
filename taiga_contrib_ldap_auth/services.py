@@ -47,6 +47,11 @@ def ldap_register(username: str, email: str, full_name: str):
                                          full_name=full_name)
         user_registered_signal.send(sender=user.__class__, user=user)
 
+    # update DB entry if LDAP field values differ
+    if user.email != email or user.full_name != full_name:
+        user_model.objects.filter(pk = user.pk).update(email = email, full_name = full_name)
+        user.refresh_from_db()
+
     return user
 
 
