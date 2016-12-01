@@ -35,13 +35,13 @@ def ldap_register(username: str, email: str, full_name: str):
     :returns: User
     """
     user_model = apps.get_model("users", "User")
+    username_unique = slugify_uniquely(username, user_model, slugfield="username")
 
     try:
         # LDAP user association exist?
-        user = user_model.objects.get(username=username)
+        user = user_model.objects.get(username=username_unique)
     except user_model.DoesNotExist:
         # Create a new user
-        username_unique = slugify_uniquely(username, user_model, slugfield="username")
         user = user_model.objects.create(email=email,
                                          username=username_unique,
                                          full_name=full_name)
