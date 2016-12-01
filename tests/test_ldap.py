@@ -31,18 +31,19 @@ def test_ldap_login_success():
         m_server.return_value = Mock()
         m_connection.return_value = Mock()
 
-        username = "**userName**"
+        login = "**userName**"
         password = "**password**"
-        (email, full_name) = connector.login(username, password)
-        assert email == username + BASE_EMAIL
-        assert full_name == username
+        (username, email, full_name) = connector.login(login, password)
+        assert username == login
+        assert email == login + BASE_EMAIL
+        assert full_name == login
 
 
 def test_ldap_login_fail():
     with pytest.raises(connector.LDAPLoginError) as e:
-        username = "**userName**"
+        login = "**userName**"
         password = "**password**"
-        auth_info = connector.login(username, password)
+        auth_info = connector.login(login, password)
 
     assert e.value.status_code == 400
     assert "error_message" in e.value.detail
