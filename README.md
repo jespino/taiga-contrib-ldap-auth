@@ -35,6 +35,7 @@ LDAP configuration:
   LDAP_SEARCH_SUFFIX = None # '@example.com'
 
   # Names of LDAP properties on user account to get email and full name
+  # These fields need to have a value in LDAP 
   LDAP_EMAIL_PROPERTY = 'mail'
   LDAP_FULL_NAME_PROPERTY = 'name'
 ```
